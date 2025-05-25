@@ -15,7 +15,7 @@ import {
 } from "@halo-dev/components";
 import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
-import { ref } from "vue";
+import {computed, ref} from "vue";
 import Draggable from "vuedraggable";
 import DeviceGroupEditingModal from "./DeviceGroupEditingModal.vue";
 
@@ -114,12 +114,17 @@ const handleSelectedClick = (group: DeviceGroup) => {
   emit("select", group.metadata.name);
 };
 
+
+const groupWithNull = computed(() => {
+  return updateGroup.value ?? null;
+});
+
 defineExpose({
   refetch,
 });
 </script>
 <template>
-  <DeviceGroupEditingModal v-model:visible="deviceGroupEditingModal" :group="updateGroup" @close="refetch()" />
+  <DeviceGroupEditingModal v-model:visible="deviceGroupEditingModal" :group="groupWithNull" @close="refetch()" />
   <VCard :body-class="['!p-0']" title="分组">
     <VLoading v-if="loading" />
     <Transition v-else-if="!groups || !groups.length" appear name="fade">
