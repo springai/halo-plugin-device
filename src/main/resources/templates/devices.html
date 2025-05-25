@@ -2,7 +2,6 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
     <title>我的设备-星风之痕</title>
     <style>
         .device-container {
@@ -138,9 +137,9 @@
     <div class="device-product-grid">
         <div class="device-product-card"  th:each="device : ${group.devices}">
             <img class="device-product-image" data-fancybox="gallery" th:src="${device.spec.cover}" th:alt="${device.spec.displayName}">
-            <h2 class="device-product-title" th:text="${device.spec.displayName}">MacBook Pro</h2>
-            <p class="device-product-subtitle" th:text="${device.spec.label}">M1Pro 32G / 1TB</p>
-            <p class="device-product-description" th:text="${device.spec.description}">屏幕显示效果好、色彩准确、对比度强、性能强劲、续航优秀。可以用来开发和设计。</p>
+            <h2 class="device-product-title" th:text="${device.spec.displayName}"></h2>
+            <p class="device-product-subtitle" th:text="${device.spec.label}"></p>
+            <p class="device-product-description" th:text="${device.spec.description}"></p>
             <div class="device-buttons">
                 <a th:href="${#strings.startsWith(device.spec.url, 'http://')
         || #strings.startsWith(device.spec.url, 'https://')
