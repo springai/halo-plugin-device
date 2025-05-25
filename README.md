@@ -119,7 +119,7 @@ List<[#DeviceVo](#devicevo)>
     },
     "spec": {
         "displayName": "string",                            // 设备名称
-        "label": "string",                                  // 设备标签                   
+        "label": "string",                                  // 设备标签
         "description": "string",                            // 设备描述
         "cover": "string",                                  // 详情链接
         "url": "string",                                    // 设备封面图片
@@ -164,16 +164,7 @@ List<[#DeviceVo](#devicevo)>
         },
         "version": 0,
         "creationTimestamp": "2025-05-25T10:49:07.927867444Z"    // 创建时间
-    },
-    "spec": {
-        "displayName": "string",                            // 分组名称
-        "description": "string",                            // 分组描述
-        "priority": 0                                    // 分组优先级
-    },
-    "status": {
-        "deviceCount": 0                                    // 分组下设备数量
-    },
-    "devices": "List<#DeviceVo>"                           // 分组下所有设备列表
+    }
 }
 ```
 
