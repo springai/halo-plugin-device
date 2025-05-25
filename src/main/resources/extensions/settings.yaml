@@ -1,0 +1,19 @@
+apiVersion: v1alpha1
+kind: Setting
+metadata:
+  name: plugin-devices-settings
+spec:
+  forms:
+    - group: base
+      label: 基本设置
+      formSchema:
+        - $formkit: text
+          label: 页面标题
+          name: title
+          validation: required
+          value: "设备"
+        - $formkit: text
+          label: 设备列表显示条数
+          name: pageSize
+          validation: required|Number
+          value: 20

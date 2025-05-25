@@ -1,0 +1,30 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: role-template-devices-view
+  labels:
+    halo.run/role-template: "true"
+  annotations:
+    rbac.authorization.halo.run/module: "设备"
+    rbac.authorization.halo.run/ui-permissions: '["plugin:devices:view"]'
+    rbac.authorization.halo.run/display-name: "设备查看"
+rules:
+  - apiGroups: [ "core.erzip.com", "console.api.device.erzip.com"]
+    resources: [ "devices", "devicegroups", "devicecomments" ]
+    verbs: [ "get", "list" ]
+---
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: role-template-devices-manage
+  labels:
+    halo.run/role-template: "true"
+  annotations:
+    rbac.authorization.halo.run/dependencies: '["role-template-devices-view"]'
+    rbac.authorization.halo.run/ui-permissions: '["plugin:devices:manage"]'
+    rbac.authorization.halo.run/module: "设备"
+    rbac.authorization.halo.run/display-name: "设备管理"
+rules:
+  - apiGroups: [ "core.erzip.com", "console.api.device.erzip.com"]
+    resources: [ "devices", "devicegroups", "devicecomments"]
+    verbs: [ "create", "patch", "update", "delete", "deletecollection" ]

@@ -1,0 +1,6 @@
+apiVersion: core.erzip.com/v1alpha1
+kind: DeviceComment
+metadata:
+  name: plugin-device-comment
+spec:
+  haloCommentEnabled: true

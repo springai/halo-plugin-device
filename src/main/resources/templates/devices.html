@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <title>我的设备-星风之痕</title>
+    <style>
+        .device-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .device-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .device-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .device-product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .device-product-card {
+            width: 100%;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            transition: transform 0.3s ease;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 768px) {
+            .device-product-card {
+                width: 356.33px; /* 最小宽度设置为356.33px */
+                min-width: 356.33px; /* 防止元素收缩 */
+            }
+        }
+        @media (min-width: 1024px) {
+            .device-product-card {
+                width: 356.33px; /* 大屏幕时设置为456.56px */
+                min-width: 356.33px;
+            }
+        }
+        .device-product-card:hover {
+            transform: scale(1.02);
+        }
+        .device-product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 5px;
+            background: #ffffff;
+        }
+        .device-product-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .device-product-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .device-product-description {
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        .device-buttons {
+            margin-top: auto;
+            text-align: left;
+            padding-top: 15px;
+        }
+        .device-details-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #495057;
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .device-details-button:hover {
+            background: linear-gradient(135deg, #007bff 0%, #0062cc 100%);
+            color: #fff;
+            border-color: #0056b3;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .device-details-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        .device-details-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                    45deg,
+                    transparent 25%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    transparent 75%
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+        .device-details-button:hover::after {
+            opacity: 1;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="device-container" th:each="group : ${deviceFinder.groupBy()}" >
+    <h1 class="device-title" th:text="${group.spec.displayName}"></h1>
+    <p class="device-subtitle" th:text="${group.spec.description}"></p>
+    <div class="device-product-grid">
+        <div class="device-product-card"  th:each="device : ${group.devices}">
+            <img class="device-product-image" data-fancybox="gallery" th:src="${device.spec.cover}" th:alt="${device.spec.displayName}">
+            <h2 class="device-product-title" th:text="${device.spec.displayName}">MacBook Pro</h2>
+            <p class="device-product-subtitle" th:text="${device.spec.label}">M1Pro 32G / 1TB</p>
+            <p class="device-product-description" th:text="${device.spec.description}">屏幕显示效果好、色彩准确、对比度强、性能强劲、续航优秀。可以用来开发和设计。</p>
+            <div class="device-buttons">
+                <a th:href="${#strings.startsWith(device.spec.url, 'http://')
+        || #strings.startsWith(device.spec.url, 'https://')
+            ? device.spec.url
+            : 'http://' + device.spec.url}"
+                   class="device-details-button">查看详情</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 需要判断当前评论组件是否满足显示的条件，这个变量可能是是否安装评论插件、文章是否开启评论等条件的组合 -->
+<div th:if="${haloCommentEnabled}">
+    <halo:comment
+            group="core.erzip.com"
+            kind="DeviceComment"
+            name="plugin-device-comment"
+    />
+</div>
+</body>
+</html>

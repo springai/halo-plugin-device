@@ -15,6 +15,8 @@ spec:
   homepage: https://github.com/springai/halo-plugin-device#readme
   repo: https://github.com/springai/halo-plugin-device
   issues: https://github.com/springai/halo-plugin-device/issues
+  configMapName: plugin-devices-configmap
+  settingName: plugin-devices-settings
   displayName: "plugin-device"
   description: "Halo个人设备管理插件"
   license:

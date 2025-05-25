@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode=development",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -9,6 +10,14 @@
     "prettier": "prettier --write src/"
   },
   "dependencies": {
+    "@formkit/core": "1.0.0-beta.12",
+    "@tanstack/vue-query": "^4.37.1",
+    "@vueuse/core": "^10.11.0",
+    "@vueuse/router": "^10.11.0",
+    "fuse.js": "^6.6.2",
+    "lodash-es": "^4.17.21",
+    "vuedraggable": "^4.1.0",
+    
     "@halo-dev/api-client": "^2.17.0",
     "@halo-dev/components": "^2.17.0",
     "@halo-dev/console-shared": "^2.17.0",
@@ -17,6 +26,11 @@
     "vue": "^3.4.31"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@unocss/eslint-config": "^0.61.5",
+    "@vue/compiler-sfc": "^3.4.33",
+    "unocss": "^0.61.5",
+    
     "@halo-dev/ui-plugin-bundler-kit": "^2.17.0",
     "@iconify/json": "^2.2.224",
     "@rushstack/eslint-patch": "^1.10.3",
