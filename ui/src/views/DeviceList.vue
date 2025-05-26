@@ -121,7 +121,7 @@ const handleOpenEditingModal = (device?: Device) => {
 
 const handleDeleteInBatch = () => {
   Dialog.warning({
-    title: "是否确认删除所选的图片？",
+    title: "是否确认删除所选的设备？",
     description: "删除之后将无法恢复。",
     confirmType: "danger",
     onConfirm: async () => {
@@ -280,7 +280,7 @@ const onAttachmentsSelect = async (attachments: AttachmentLike[]) => {
 
   await Promise.all(createRequests);
 
-  Toast.success(`新建成功，一共创建了 ${devices.length} 张图片。`);
+  Toast.success(`新建成功，一共创建了 ${devices.length} 张设备。`);
   pageRefetch();
 };
 
@@ -352,7 +352,7 @@ const pageRefetch = async () => {
             <VEmpty message="请选择或新建分组" title="未选择分组"></VEmpty>
           </Transition>
           <Transition v-else-if="!searchResults.length" appear name="fade">
-            <VEmpty message="你可以尝试刷新或者新建图片" title="当前没有图片">
+            <VEmpty message="你可以尝试刷新或者新建设备" title="当前没有设备">
               <template #actions>
                 <VSpace>
                   <VButton @click="refetch"> 刷新</VButton>
@@ -360,7 +360,7 @@ const pageRefetch = async () => {
                     <template #icon>
                       <IconAddCircle class="size-full" />
                     </template>
-                    新增图片
+                    新增设备
                   </VButton>
                 </VSpace>
               </template>
