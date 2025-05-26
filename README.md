@@ -15,6 +15,19 @@
 - 模板路径: /templates/devices.html
 - 访问路径：/devices
 
+### 效果演示
+#### 前端
+![前端效果演示](https://erzip.com/upload/005-Yinw.avif)
+#### 后台
+##### 设备库
+![后台效果演示-设备库](https://erzip.com/upload/008-sQlM.avif)
+##### 新建分组
+![后台效果演示-新建分组](https://erzip.com/upload/009-nYDw.avif)
+##### 编辑分组
+![后台效果演示-编辑分组](https://erzip.com/upload/010-rypq.avif)
+##### 评论主体
+![后台效果演示-评论主体](https://erzip.com/upload/011-WDCt.avif)
+
 
 ### Finder API
 
