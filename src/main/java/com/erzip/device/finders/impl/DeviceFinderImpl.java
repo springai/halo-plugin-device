@@ -17,6 +17,7 @@ import org.springframework.util.comparator.Comparators;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListResult;
+import run.halo.app.extension.MetadataOperator;
 import run.halo.app.extension.ReactiveExtensionClient;
 import run.halo.app.theme.finders.Finder;
 
@@ -90,6 +91,26 @@ public class DeviceFinderImpl implements DeviceFinder {
         });
     }
 
+    @Override
+    public Mono<DeviceGroupVo> groupBy(String groupName) {
+        return client.list(DeviceGroup.class, null, defaultGroupComparator())
+            .filter(group -> group.getMetadata().getName().equals(groupName))
+            .next()
+            .flatMap(group ->
+                this.listBy(group.getMetadata().getName())
+                    .collectList()
+                    .map(devices -> {
+                        DeviceGroup.PostGroupStatus status = group.getStatus();
+                        status.setDeviceCount(devices.size());
+                        return new DeviceGroupVo(
+                            group.getMetadata(),
+                            group.getSpec(),
+                            status,
+                            devices
+                        );
+                    })
+            );
+    }
 
 
     private Comparator<Device> defaultDeviceComparator() {

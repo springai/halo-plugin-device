@@ -8,7 +8,6 @@ import com.erzip.device.finders.DeviceFinder;
 
 import com.erzip.device.vo.DeviceGroupVo;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,10 +46,14 @@ public class DeviceRouter {
 
     Mono<ServerResponse> renderDevicePage(ServerRequest request) {
         // 或许你需要准备你需要提供给模板的默认数据，非必须
-        var model = new HashMap<String, Object>();
-        model.put("devices", List.of());
         return templateNameResolver.resolveTemplateNameOrDefault(request.exchange(), "devices")
-            .flatMap(templateName -> ServerResponse.ok().render(templateName, model));
+            .flatMap(templateName -> ServerResponse.ok().render(templateName,
+                Map.of("groups", deviceGroups(),
+                    "devices", deviceList(request),
+                    ModelConst.TEMPLATE_ID, "devices",
+                    "title", getDevicesTitle()
+                )
+            ));
     }
 
 
@@ -60,6 +63,7 @@ public class DeviceRouter {
             handlerFunction()
         );
     }
+
     private HandlerFunction<ServerResponse> handlerFunction() {
         return request -> ServerResponse.ok().render("devices",
             Map.of("groups", deviceGroups(),
@@ -69,6 +73,7 @@ public class DeviceRouter {
             )
         );
     }
+
     private Mono<UrlContextListResult<DeviceVo>> deviceList(ServerRequest request) {
         String path = request.path();
         int pageNum = pageNumInPathVariable(request);
@@ -95,10 +100,12 @@ public class DeviceRouter {
             .build()
             .toString();
     }
+
     private int pageNumInPathVariable(ServerRequest request) {
         String page = request.pathVariables().get("page");
         return NumberUtils.toInt(page, 1);
     }
+
     private String groupPathQueryParam(ServerRequest request) {
         return request.queryParam(GROUP_PARAM)
             .filter(StringUtils::isNotBlank)
@@ -110,6 +117,7 @@ public class DeviceRouter {
             setting -> setting.get("title").asText("个人设备")).defaultIfEmpty(
             "个人设备");
     }
+
     private Mono<List<DeviceGroupVo>> deviceGroups() {
         return deviceFinder.groupBy().collectList();
     }

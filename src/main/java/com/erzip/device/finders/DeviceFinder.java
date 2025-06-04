@@ -19,4 +19,7 @@ public interface DeviceFinder {
     Flux<DeviceVo> listBy(String groupName);
 
     Flux<DeviceGroupVo> groupBy();
+
+    Mono<DeviceGroupVo> groupBy(String groupName);
+
 }

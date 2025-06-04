@@ -11,7 +11,7 @@ metadata:
 rules:
   - apiGroups: [ "core.erzip.com", "console.api.device.erzip.com"]
     resources: [ "devices", "devicegroups", "devicecomments" ]
-    verbs: [ "get", "list" ]
+    verbs: [ "get", "list"]
 ---
 apiVersion: v1alpha1
 kind: Role

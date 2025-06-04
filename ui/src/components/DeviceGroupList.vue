@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { DeviceGroup, DeviceGroupList } from "@/types";
+import type {Device, DeviceGroup, DeviceGroupList} from "@/types";
 import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
@@ -15,10 +15,9 @@ import {
 } from "@halo-dev/components";
 import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import Draggable from "vuedraggable";
 import DeviceGroupEditingModal from "./DeviceGroupEditingModal.vue";
-
 
 const emit = defineEmits<{
   (event: "select", group?: string): void;
@@ -26,10 +25,11 @@ const emit = defineEmits<{
 
 const loading = ref(false);
 const deviceGroupEditingModal = ref(false);
-
 const updateGroup = ref<DeviceGroup>();
-
 const selectedGroup = useRouteQuery<string>("device-group");
+
+// 创建本地可写的分组列表副本
+const localGroups = ref<DeviceGroup[]>([]);
 
 const { data: groups, refetch } = useQuery<DeviceGroup[]>({
   queryKey: [],
@@ -48,10 +48,12 @@ const { data: groups, refetch } = useQuery<DeviceGroup[]>({
   },
   refetchInterval(data) {
     const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
-
     return deletingGroups?.length ? 1000 : false;
   },
   onSuccess(data) {
+    // 更新本地副本
+    localGroups.value = [...data];
+
     if (selectedGroup.value) {
       const groupNames = data.map((group) => group.metadata.name);
       if (groupNames.includes(selectedGroup.value)) {
@@ -70,21 +72,39 @@ const { data: groups, refetch } = useQuery<DeviceGroup[]>({
   refetchOnWindowFocus: false,
 });
 
+// 监听groups变化并更新本地副本（确保数据同步）
+watch(groups, (newVal) => {
+  if (newVal) {
+    localGroups.value = [...newVal];
+  }
+});
+
 const handleSaveInBatch = async () => {
+  console.log("开始保存顺序");
   try {
-    const promises = groups.value?.map((group: DeviceGroup, index) => {
+    // 使用本地副本进行保存
+    const promises = localGroups.value?.map((group: DeviceGroup, index) => {
+      console.log("名称：",group.spec?.displayName)
+      console.log("当前顺序:", group.spec?.priority)
+      console.log("保存顺序",index)
       if (group.spec) {
         group.spec.priority = index;
       }
-      return axiosInstance.put(`/apis/core.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
+      return axiosInstance.put<DeviceGroup>(`/apis/console.api.device.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
     });
+
     if (promises) {
       await Promise.all(promises);
+      console.log("所有设备分组的顺序已成功保存");
+      // 保存成功后重新获取数据
+      refetch();
     }
   } catch (e) {
-    console.error(e);
-  } finally {
-    refetch();
+    console.error("保存顺序时发生错误", e);
+    // 保存失败时回滚到原始数据
+    if (groups.value) {
+      localGroups.value = [...groups.value];
+    }
   }
 };
 
@@ -114,7 +134,6 @@ const handleSelectedClick = (group: DeviceGroup) => {
   emit("select", group.metadata.name);
 };
 
-
 const groupWithNull = computed(() => {
   return updateGroup.value ?? null;
 });
@@ -123,6 +142,7 @@ defineExpose({
   refetch,
 });
 </script>
+
 <template>
   <DeviceGroupEditingModal v-model:visible="deviceGroupEditingModal" :group="groupWithNull" @close="refetch()" />
   <VCard :body-class="['!p-0']" title="分组">
@@ -137,8 +157,9 @@ defineExpose({
       </VEmpty>
     </Transition>
     <Transition v-else appear name="fade">
+      <!-- 使用本地副本进行拖拽 -->
       <Draggable
-        v-model="groups"
+        v-model="localGroups"
         class="box-border size-full divide-y divide-gray-100"
         group="group"
         handle=".drag-element"

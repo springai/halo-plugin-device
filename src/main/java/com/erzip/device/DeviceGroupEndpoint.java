@@ -41,6 +41,12 @@ public class DeviceGroupEndpoint implements CustomEndpoint {
                     DeviceQuery.buildParameters(builder);
                 }
             )
+            .PUT("devicegroups/{name}",this::updateGroupIndex,builder -> {
+                builder.operationId("updateGroup Index")
+                    .description("Update device group index.")
+                    .response(responseBuilder().implementation(
+                        ListResult.generateGenericClass(DeviceGroup.class)));
+            })
             .DELETE("devicegroups/{name}", this::deleteDeviceGroup,
                 builder -> builder.operationId("DeleteDeviceGroup")
                     .description("Delete device group.")
@@ -74,5 +80,29 @@ public class DeviceGroupEndpoint implements CustomEndpoint {
         IListRequest.QueryListRequest request = new DeviceQuery(serverRequest.queryParams());
         return deviceGroupService.listDeviceGroup(request)
             .flatMap(deviceGroups -> ServerResponse.ok().bodyValue(deviceGroups));
+    }
+
+    private Mono<ServerResponse> updateGroupIndex(ServerRequest serverRequest) {
+        String name = serverRequest.pathVariable("name");
+        if (StringUtils.isBlank(name)) {
+            return Mono.error(new ServerWebInputException("Device group name must not be blank."));
+        }
+
+        return serverRequest.bodyToMono(DeviceGroup.class)
+            .flatMap(deviceGroup -> {
+                // 验证路径参数与对象名称是否一致
+                if (!name.equals(deviceGroup.getMetadata().getName())) {
+                    return Mono.error(new ServerWebInputException(
+                        "Path name does not match device group name in body"
+                    ));
+                }
+                return deviceGroupService.updateDeviceGroup(deviceGroup);
+            })
+            .flatMap(updatedGroup ->
+                ServerResponse.ok().bodyValue(updatedGroup)
+            )
+            .onErrorResume(ServerWebInputException.class, e ->
+                ServerResponse.badRequest().bodyValue(e.getMessage())
+            );
     }
 }

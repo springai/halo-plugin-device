@@ -145,6 +145,7 @@ const handleSaveDevice = async () => {
           <FormKit name="description" label="描述" type="textarea" validation="required" help="例如: 屏幕显示效果..."></FormKit>
           <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']" validation="required" help="设备封面图"></FormKit>
           <FormKit name="url" label="详情地址" type="text" validation="required" help="可以是文章链接、商品购买链接等"></FormKit>
+          <FormKit name="priority" label="优先级" type="text" validation="required" help="用于排序，0优先级最大"></FormKit>
         </div>
       </div>
     </FormKit>

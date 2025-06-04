@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import run.halo.app.extension.ListResult;
@@ -53,6 +54,31 @@ public class DeviceGroupServiceImpl implements DeviceGroupService {
                         device.getSpec().getGroupName()
                     ), null
                 ).flatMap(this.client::delete).then(Mono.just(deleted))));
+    }
+
+    @Override
+    public Mono<DeviceGroup> updateDeviceGroup(DeviceGroup updatedGroup) {
+        // 1. 验证输入
+        if (updatedGroup.getSpec() == null || updatedGroup.getSpec().getPriority() == null) {
+            return Mono.error(new ServerWebInputException("Priority cannot be null"));
+        }
+
+        // 2. 获取设备组名称
+        String groupName = updatedGroup.getMetadata().getName();
+        if (StringUtils.isBlank(groupName)) {
+            return Mono.error(new ServerWebInputException("Device group name must not be blank"));
+        }
+
+        // 3. 查询现有设备组
+        return this.client.fetch(DeviceGroup.class, groupName)
+            .switchIfEmpty(Mono.error(new ServerWebInputException(
+                "Device group not found: " + groupName
+            )))
+            .flatMap(existingGroup -> {
+                existingGroup.getSpec().setPriority(updatedGroup.getSpec().getPriority());
+                // 5. 保存更新
+                return this.client.update(existingGroup);
+            });
     }
 
     private Mono<DeviceGroup> populateDevices(DeviceGroup deviceGroup) {

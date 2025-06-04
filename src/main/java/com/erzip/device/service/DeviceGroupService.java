@@ -10,4 +10,6 @@ public interface DeviceGroupService {
     Mono<ListResult<DeviceGroup>> listDeviceGroup(QueryListRequest query);
 
     Mono<DeviceGroup> deleteDeviceGroup(String name);
+
+    Mono<DeviceGroup> updateDeviceGroup(DeviceGroup deviceGroup);
 }
