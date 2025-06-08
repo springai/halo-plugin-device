@@ -1,4 +1,6 @@
 package com.erzip.device;
+import org.springframework.web.server.ServerWebExchange;
+import run.halo.app.extension.router.SortableRequest;
 
 import static org.springdoc.core.fn.builders.parameter.Builder.parameterBuilder;
 import static run.halo.app.extension.router.QueryParamBuildUtil.sortParameter;
@@ -6,41 +8,26 @@ import static run.halo.app.extension.router.QueryParamBuildUtil.sortParameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
+
 import org.springdoc.core.fn.builders.operation.Builder;
-import org.springframework.util.MultiValueMap;
+
 import run.halo.app.extension.router.IListRequest;
 
-public class DeviceQuery extends IListRequest.QueryListRequest {
+public class DeviceQuery extends SortableRequest {
 
-    public DeviceQuery(MultiValueMap<String, String> queryParams) {
-        super(queryParams);
+    public DeviceQuery(ServerWebExchange exchange) {
+        super(exchange);
     }
 
     @Schema(description = "按分组查询")
     public String getGroup(){
-        return StringUtils.defaultIfBlank(queryParams.getFirst("group"),null);
+        return queryParams.getFirst("group");
     }
 
     @Nullable
     @Schema(description = "按关键字查询")
     public String getKeyword(){
-        return StringUtils.defaultIfBlank(queryParams.getFirst("keyword"), null);
-    }
-
-    @Schema(description = "设备排序")
-    public DeviceSorter getSort(){
-        String sort = queryParams.getFirst("sort");
-        return DeviceSorter.convertFrom(sort);
-    }
-
-    @Schema(description = "是否降序排列")
-    public Boolean getSortOrder(){
-        String sortOrder = queryParams.getFirst("sortOrder");
-        return convertBooleanOrNull(sortOrder);
-    }
-    private Boolean convertBooleanOrNull(String value) {
-        return StringUtils.isBlank(value) ? null : Boolean.parseBoolean(value);
+        return queryParams.getFirst("keyword");
     }
 
     public static void buildParameters(Builder builder) {

@@ -1,17 +1,16 @@
 package com.erzip.device.service.impl;
 
-import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToPredicate;
+import static run.halo.app.extension.router.selector.SelectorUtil.labelAndFieldSelectorToListOptions;
+import run.halo.app.extension.ListOptions;
+import run.halo.app.extension.PageRequestImpl;
+import run.halo.app.extension.index.query.QueryFactory;
 
 import com.erzip.device.DeviceQuery;
-import com.erzip.device.DeviceSorter;
 import com.erzip.device.extension.Device;
 import com.erzip.device.service.DeviceService;
-import java.util.Comparator;
-import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import run.halo.app.extension.Extension;
 import run.halo.app.extension.ListResult;
 import run.halo.app.extension.ReactiveExtensionClient;
 
@@ -26,37 +25,24 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public Mono<ListResult<Device>> listDevice(DeviceQuery query) {
-        Comparator<Device> comparator = DeviceSorter.from(query.getSort(),
-            query.getSortOrder()
-        );
-        return this.client.list(Device.class, deviceListPredicate(query),
-            comparator, query.getPage(), query.getSize()
-        );
+        return this.client.listBy(
+            Device.class,
+            toListOptions(query),
+            PageRequestImpl.of(query.getPage(), query.getSize(), query.getSort()));
     }
 
-    private Predicate<Device> deviceListPredicate(DeviceQuery query) {
-        Predicate<Device> predicate = device -> true;
-        String keyword = query.getKeyword();
-
-        if (keyword != null) {
-            predicate = predicate.and(device -> {
-                String displayName = device.getSpec().getDisplayName();
-                return StringUtils.containsIgnoreCase(displayName, keyword);
-            });
-        }
-
-        String groupName = query.getGroup();
-        if (groupName != null) {
-            predicate = predicate.and(device -> {
-                String group = device.getSpec().getGroupName();
-                return StringUtils.equals(group, groupName);
-            });
-        }
-
-        Predicate<Extension> labelAndFieldSelectorPredicate
-            = labelAndFieldSelectorToPredicate(query.getLabelSelector(),
-            query.getFieldSelector()
+    private ListOptions toListOptions(DeviceQuery query) {
+        var builder = ListOptions.builder(labelAndFieldSelectorToListOptions(
+            query.getLabelSelector(), query.getFieldSelector())
         );
-        return predicate.and(labelAndFieldSelectorPredicate);
+
+        if (StringUtils.isNotBlank(query.getKeyword())) {
+            builder.andQuery(QueryFactory.contains("spec.displayName", query.getKeyword()));
+        }
+        if (StringUtils.isNotBlank(query.getGroup())) {
+            builder.andQuery(QueryFactory.equal("spec.groupName", query.getGroup()));
+        }
+        return builder.build();
     }
+
 }

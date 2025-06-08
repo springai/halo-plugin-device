@@ -16,7 +16,7 @@ import {
 import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
 import {computed, ref, watch} from "vue";
-import Draggable from "vuedraggable";
+import { VueDraggable } from "vue-draggable-plus";
 import DeviceGroupEditingModal from "./DeviceGroupEditingModal.vue";
 
 const emit = defineEmits<{
@@ -27,6 +27,8 @@ const loading = ref(false);
 const deviceGroupEditingModal = ref(false);
 const updateGroup = ref<DeviceGroup>();
 const selectedGroup = useRouteQuery<string>("device-group");
+
+
 
 // 创建本地可写的分组列表副本
 const localGroups = ref<DeviceGroup[]>([]);
@@ -90,7 +92,7 @@ const handleSaveInBatch = async () => {
       if (group.spec) {
         group.spec.priority = index;
       }
-      return axiosInstance.put<DeviceGroup>(`/apis/console.api.device.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
+      return axiosInstance.put<DeviceGroup>(`/apis/core.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
     });
 
     if (promises) {
@@ -157,19 +159,24 @@ defineExpose({
       </VEmpty>
     </Transition>
     <Transition v-else appear name="fade">
-      <!-- 使用本地副本进行拖拽 -->
-      <Draggable
-        v-model="localGroups"
-        class="box-border size-full divide-y divide-gray-100"
-        group="group"
-        handle=".drag-element"
-        item-key="metadata.name"
-        tag="ul"
-        @change="handleSaveInBatch"
-      >
-        <template #item="{ element: group }">
-          <li @click="handleSelectedClick(group)">
-            <VEntity :is-selected="selectedGroup === group.metadata.name" class="group">
+      <div class="w-full overflow-x-auto">
+        <table class="w-full border-spacing-0">
+          <VueDraggable
+            v-model="localGroups"
+            class="divide-y divide-gray-100"
+            group="group"
+            handle=".drag-element"
+            item-key="metadata.name"
+            tag="tbody"
+            @update="handleSaveInBatch"
+          >
+            <VEntity
+              v-for="group in localGroups"
+              :key="group.metadata.name"
+              :is-selected="selectedGroup === group.metadata.name"
+              class="group"
+              @click="handleSelectedClick(group)"
+            >
               <template #prepend>
                 <div
                   class="drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all hover:bg-gray-200 group-hover:flex"
@@ -198,9 +205,9 @@ defineExpose({
                 <VDropdownItem type="danger" @click="handleDelete(group)"> 删除 </VDropdownItem>
               </template>
             </VEntity>
-          </li>
-        </template>
-      </Draggable>
+          </VueDraggable>
+        </table>
+      </div>
     </Transition>
 
     <template v-if="!loading" #footer>

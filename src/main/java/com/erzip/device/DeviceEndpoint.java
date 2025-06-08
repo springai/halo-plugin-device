@@ -45,8 +45,8 @@ public class DeviceEndpoint implements CustomEndpoint {
     }
 
     private Mono<ServerResponse> listDevice(ServerRequest serverRequest) {
-        DeviceQuery query = new DeviceQuery(serverRequest.queryParams());
-        return deviceService.listDevice(query).flatMap(
-            devices -> ServerResponse.ok().bodyValue(devices));
+        DeviceQuery query = new DeviceQuery(serverRequest.exchange());
+        return deviceService.listDevice(query)
+            .flatMap(devices -> ServerResponse.ok().bodyValue(devices));
     }
 }
