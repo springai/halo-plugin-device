@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import type { Device } from "@/types";
-import { reset, submitForm } from "@formkit/core";
-import { axiosInstance } from "@halo-dev/api-client";
-import { IconSave, VButton, VModal } from "@halo-dev/components";
-import { cloneDeep } from "lodash-es";
-import { computed, nextTick, ref, watch } from "vue";
+import type {Device} from "@/types";
+import {reset, submitForm} from "@formkit/core";
+import {axiosInstance} from "@halo-dev/api-client";
+import {IconSave, VButton, VModal} from "@halo-dev/components";
+import {cloneDeep} from "lodash-es";
+import {computed, nextTick, ref, watch} from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -88,7 +88,7 @@ const annotationsFormRef = ref();
 const handleSaveDevice = async () => {
   annotationsFormRef.value?.handleSubmit();
   await nextTick();
-  const { customAnnotations, annotations, customFormInvalid, specFormInvalid } = annotationsFormRef.value || {};
+  const {customAnnotations, annotations, customFormInvalid, specFormInvalid} = annotationsFormRef.value || {};
   if (customFormInvalid || specFormInvalid) {
     return;
   }
@@ -107,7 +107,7 @@ const handleSaveDevice = async () => {
       if (props.group) {
         formState.value.spec.groupName = props.group;
       }
-      const { data } = await axiosInstance.post<Device>(`/apis/core.erzip.com/v1alpha1/devices`, formState.value);
+      const {data} = await axiosInstance.post<Device>(`/apis/core.erzip.com/v1alpha1/devices`, formState.value);
       emit("saved", data);
     }
     onVisibleChange(false);
@@ -121,7 +121,7 @@ const handleSaveDevice = async () => {
 <template>
   <VModal :title="modalTitle" :visible="visible" :width="650" @update:visible="onVisibleChange">
     <template #actions>
-      <slot name="append-actions" />
+      <slot name="append-actions"/>
     </template>
 
     <FormKit
@@ -141,11 +141,22 @@ const handleSaveDevice = async () => {
         </div>
         <div class="mt-5 divide-y divide-gray-100 md:col-span-3 md:mt-0">
           <FormKit name="displayName" label="名称" type="text" validation="required" help="例如: MacBook Pro"></FormKit>
-          <FormKit name="label" label="标签" type="textarea" validation="required" help="例如: M1Pro 32G / 1TB "></FormKit>
-          <FormKit name="description" label="描述" type="textarea" validation="required" help="例如: 屏幕显示效果..."></FormKit>
-          <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']" validation="required" help="设备封面图"></FormKit>
-          <FormKit name="url" label="详情地址" type="text" validation="required" help="可以是文章链接、商品购买链接等"></FormKit>
-          <FormKit name="priority" label="优先级" type="text" validation="required" help="用于排序，0优先级最大"></FormKit>
+          <FormKit name="label" label="标签" type="textarea" validation="required"
+                   help="例如: M1Pro 32G / 1TB "></FormKit>
+          <FormKit name="description" label="描述" type="textarea" validation="required"
+                   help="例如: 屏幕显示效果..."></FormKit>
+          <FormKit name="cover" label="封面" type="attachment" :accepts="['image/*']" validation="required"
+                   help="设备封面图"></FormKit>
+          <FormKit name="url" label="详情地址" type="text" validation="required"
+                   help="可以是文章链接、商品购买链接等"></FormKit>
+          <FormKit name="priority" label="优先级" type="number" number="integer"
+                   validation="min:0" step="1" min="0"
+                   :validation-messages="{
+                      integer: '必须输入整数',
+                      min: '不能小于0'
+                    }"
+                   validation-visibility="live"
+                   help="用于排序，0优先级最大"></FormKit>
         </div>
       </div>
     </FormKit>
@@ -172,7 +183,7 @@ const handleSaveDevice = async () => {
     <template #footer>
       <VButton :loading="saving" type="secondary" @click="submitForm('device-form')">
         <template #icon>
-          <IconSave class="size-full" />
+          <IconSave class="size-full"/>
         </template>
         保存
       </VButton>
