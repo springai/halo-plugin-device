@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type {Device, DeviceGroup, DeviceGroupList} from "@/types";
+import type {DeviceGroup, DeviceGroupList} from "../types/index";
 import { axiosInstance } from "@halo-dev/api-client";
 import {
   Dialog,
@@ -15,7 +15,7 @@ import {
 } from "@halo-dev/components";
 import { useQuery } from "@tanstack/vue-query";
 import { useRouteQuery } from "@vueuse/router";
-import {computed, ref, watch} from "vue";
+import { ref } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
 import DeviceGroupEditingModal from "./DeviceGroupEditingModal.vue";
 
@@ -23,18 +23,13 @@ const emit = defineEmits<{
   (event: "select", group?: string): void;
 }>();
 
-const loading = ref(false);
 const deviceGroupEditingModal = ref(false);
 const updateGroup = ref<DeviceGroup>();
 const selectedGroup = useRouteQuery<string>("device-group");
+const groups = ref<DeviceGroup[]>([]);
 
-
-
-// 创建本地可写的分组列表副本
-const localGroups = ref<DeviceGroup[]>([]);
-
-const { data: groups, refetch } = useQuery<DeviceGroup[]>({
-  queryKey: [],
+const { refetch, isLoading } = useQuery<DeviceGroup[]>({
+  queryKey: ["plugin:photos:groups"],
   queryFn: async () => {
     const { data } = await axiosInstance.get<DeviceGroupList>("/apis/console.api.device.erzip.com/v1alpha1/devicegroups");
     return data.items
@@ -49,12 +44,11 @@ const { data: groups, refetch } = useQuery<DeviceGroup[]>({
       });
   },
   refetchInterval(data) {
-    const deletingGroups = data?.filter((group) => !!group.metadata.deletionTimestamp);
-    return deletingGroups?.length ? 1000 : false;
+    const hasDeletingGroup = data?.some((group) => !!group.metadata.deletionTimestamp);
+    return hasDeletingGroup ? 1000 : false;
   },
   onSuccess(data) {
-    // 更新本地副本
-    localGroups.value = [...data];
+    groups.value = data;
 
     if (selectedGroup.value) {
       const groupNames = data.map((group) => group.metadata.name);
@@ -74,39 +68,22 @@ const { data: groups, refetch } = useQuery<DeviceGroup[]>({
   refetchOnWindowFocus: false,
 });
 
-// 监听groups变化并更新本地副本（确保数据同步）
-watch(groups, (newVal) => {
-  if (newVal) {
-    localGroups.value = [...newVal];
-  }
-});
-
 const handleSaveInBatch = async () => {
-  console.log("开始保存顺序");
   try {
-    // 使用本地副本进行保存
-    const promises = localGroups.value?.map((group: DeviceGroup, index) => {
-      console.log("名称：",group.spec?.displayName)
-      console.log("当前顺序:", group.spec?.priority)
-      console.log("保存顺序",index)
+    const promises = groups.value?.map((group: DeviceGroup, index) => {
       if (group.spec) {
         group.spec.priority = index;
       }
-      return axiosInstance.put<DeviceGroup>(`/apis/core.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
+      return axiosInstance.put(`/apis/core.erzip.com/v1alpha1/devicegroups/${group.metadata.name}`, group);
     });
 
     if (promises) {
       await Promise.all(promises);
-      console.log("所有设备分组的顺序已成功保存");
-      // 保存成功后重新获取数据
-      refetch();
     }
   } catch (e) {
     console.error("保存顺序时发生错误", e);
-    // 保存失败时回滚到原始数据
-    if (groups.value) {
-      localGroups.value = [...groups.value];
-    }
+  } finally {
+    refetch();
   }
 };
 
@@ -136,19 +113,21 @@ const handleSelectedClick = (group: DeviceGroup) => {
   emit("select", group.metadata.name);
 };
 
-const groupWithNull = computed(() => {
-  return updateGroup.value ?? null;
-});
-
 defineExpose({
   refetch,
 });
+
+function onGroupEditingModalClose() {
+  deviceGroupEditingModal.value = false;
+  refetch();
+}
+
 </script>
 
 <template>
-  <DeviceGroupEditingModal v-model:visible="deviceGroupEditingModal" :group="groupWithNull" @close="refetch()" />
-  <VCard :body-class="['!p-0']" title="分组">
-    <VLoading v-if="loading" />
+  <DeviceGroupEditingModal v-if="deviceGroupEditingModal" :group="updateGroup" @close="onGroupEditingModalClose" />
+  <VCard :body-class="[':uno: !p-0']" title="分组">
+    <VLoading v-if="isLoading" />
     <Transition v-else-if="!groups || !groups.length" appear name="fade">
       <VEmpty message="你可以尝试刷新或者新建分组" title="当前没有分组">
         <template #actions>
@@ -159,11 +138,11 @@ defineExpose({
       </VEmpty>
     </Transition>
     <Transition v-else appear name="fade">
-      <div class="w-full overflow-x-auto">
-        <table class="w-full border-spacing-0">
+      <div class=":uno: w-full overflow-x-auto">
+        <table class=":uno: w-full border-spacing-0">
           <VueDraggable
-            v-model="localGroups"
-            class="divide-y divide-gray-100"
+            v-model="groups"
+            class=":uno: divide-y divide-gray-100"
             group="group"
             handle=".drag-element"
             item-key="metadata.name"
@@ -171,17 +150,17 @@ defineExpose({
             @update="handleSaveInBatch"
           >
             <VEntity
-              v-for="group in localGroups"
+              v-for="group in groups"
               :key="group.metadata.name"
               :is-selected="selectedGroup === group.metadata.name"
-              class="group"
+              class=":uno: group"
               @click="handleSelectedClick(group)"
             >
               <template #prepend>
                 <div
-                  class="drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all hover:bg-gray-200 group-hover:flex"
+                  class=":uno: drag-element absolute inset-y-0 left-0 hidden w-3.5 cursor-move items-center bg-gray-100 transition-all group-hover:flex hover:bg-gray-200"
                 >
-                  <IconList class="h-3.5 w-3.5" />
+                  <IconList class=":uno: size-3.5" />
                 </div>
               </template>
 
@@ -210,17 +189,17 @@ defineExpose({
       </div>
     </Transition>
 
-    <template v-if="!loading" #footer>
-      <Transition appear name="fade">
-        <VButton
-          v-permission="['plugin:devices:manage']"
-          block
-          type="secondary"
-          @click="handleOpenEditingModal(undefined)"
-        >
-          新增分组
-        </VButton>
-      </Transition>
+    <template v-if="!isLoading" #footer>
+      <!-- @unocss-skip-start -->
+      <VButton
+        v-permission="['plugin:devices:manage']"
+        block
+        type="secondary"
+        @click="handleOpenEditingModal(undefined)"
+      >
+        新增分组
+      </VButton>
+      <!-- @unocss-skip-end -->
     </template>
   </VCard>
 </template>

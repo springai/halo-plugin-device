@@ -10,10 +10,10 @@ module.exports = {
     "@vue/eslint-config-prettier",
     "@unocss",
   ],
-  parserOptions: {
-    ecmaVersion: "latest",
-  },
   env: {
     "vue/setup-compiler-macros": true,
+  },
+  rules: {
+    "@unocss/enforce-class-compile": 1,
   },
 };

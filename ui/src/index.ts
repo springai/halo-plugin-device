@@ -1,19 +1,20 @@
-import { definePlugin, type CommentSubjectRefProvider, type CommentSubjectRefResult } from "@halo-dev/console-shared";
-import { markRaw } from "vue";
-import DeviceList from "@/views/DeviceList.vue";
-import RiImage2Line from "~icons/ri/image-2-line";
+import { definePlugin } from "@halo-dev/console-shared";
+import { defineAsyncComponent, markRaw } from "vue";
 import RiHardDrive2Line from "~icons/ri/hard-drive-2-line"
-import type { Extension } from "@halo-dev/api-client";
+import "uno.css";
+import { VLoading } from "@halo-dev/components";
 
 export default definePlugin({
-  components: {},
   routes: [
     {
       parentName: "Root",
       route: {
         path: "/devices",
         name: "Devices",
-        component: DeviceList,
+        component: defineAsyncComponent({
+          loader: () => import("@/views/DeviceList.vue"),
+          loadingComponent: VLoading,
+        }),
         meta: {
           permissions: ["plugin:devices:view"],
           menu: {
@@ -25,24 +26,4 @@ export default definePlugin({
       },
     },
   ],
-  extensionPoints: {
-    "comment:subject-ref:create": (): CommentSubjectRefProvider[] => {
-      return [
-        {
-          kind: "DeviceComment",
-          group: "core.erzip.com",
-          resolve: (subject: Extension): CommentSubjectRefResult => {
-            return {
-              label: "设备库",
-              title: "设备库页面",
-              externalUrl: "/devices",
-              route: {
-                name: "Devices",
-              },
-            };
-          },
-        },
-      ];
-    },
-  },
 });
